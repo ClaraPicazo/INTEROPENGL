@@ -37,7 +37,7 @@ void MyGLWidget::initializeGL ()
   initializeOpenGLFunctions();  
   patricio.load("./models/Patricio.obj"); 
   scale = 1.0f;
-  /*Declaracio atributs dels parametres : MyGLWidget.h
+  /*Declaracio atributs dels parametres patricio,patrMin,patrMax: a MyGLWidget.h
     Al cridar la funcio calCapsaContenidora : dono valor als atributs
   */
   calculaCapsaContenidora(patricio,patrMin,patrMax);
@@ -195,7 +195,7 @@ void MyGLWidget::createBuffers ()
       glm::vec3(48./255.,63./255.,159./255.),
       glm::vec3(48./255.,63./255.,159./255.),
       glm::vec3(48./255.,63./255.,159./255.),
-  };
+  };1
 
   // Creació del Vertex Array Object per pintar
   glGenVertexArrays(1, &VAO_Terra);
