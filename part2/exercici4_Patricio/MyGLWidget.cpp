@@ -195,7 +195,7 @@ void MyGLWidget::createBuffers ()
       glm::vec3(48./255.,63./255.,159./255.),
       glm::vec3(48./255.,63./255.,159./255.),
       glm::vec3(48./255.,63./255.,159./255.),
-  };1
+  };
 
   // Creació del Vertex Array Object per pintar
   glGenVertexArrays(1, &VAO_Terra);
