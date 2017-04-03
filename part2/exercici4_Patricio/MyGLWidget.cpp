@@ -13,23 +13,23 @@ MyGLWidget::~MyGLWidget ()
     delete program;
 }
 
-void calcCapsaContenidora(const Model &model,glm::vec3& min,glm::vec3& max)
+void calculaCapsaContenidora(const Model &patricio,glm::vec3& min,glm::vec3& max)
 {
-    min.x = max.x = model.vertices()[0];
-    min.y = max.y = model.vertices()[1];
-    min.z = max.z = model.vertices()[2];
-    for(unsigned int i = 3;i<model.vertices().size();i+=3) {
-        double x = model.vertices()[i];
-        double y = model.vertices()[i+1];
-        double z = model.vertices()[i+2];
-        if(x<min.x) min.x = x;
-        else if (x>max.x) max.x = x;
-        if(y<min.y) min.y = y;
-        else if (y>max.y) max.y = y;
-        if(z<min.z) min.z = z;
-        else if (z>max.z) max.z = z;
+    min.x = max.x = patricio.vertices()[0];
+    min.y = max.y = patricio.vertices()[1];
+    min.z = max.z = patricio.vertices()[2];
+    for(unsigned int i = 3; i < patricio.vertices().size(); i += 3) {
+        double x = patricio.vertices()[i];
+        double y = patricio.vertices()[i+1];
+        double z = patricio.vertices()[i+2];
+        if(x < min.x) min.x = x;
+        else if (x > max.x) max.x = x;
+        if(y < min.y) min.y = y;
+        else if (y > max.y) max.y = y;
+        if(z < min.z) min.z = z;
+        else if (z > max.z) max.z = z;
     }
-}
+} 
 
 void MyGLWidget::initializeGL ()
 {
@@ -37,7 +37,10 @@ void MyGLWidget::initializeGL ()
   initializeOpenGLFunctions();  
   patricio.load("./models/Patricio.obj"); 
   scale = 1.0f;
-  calcCapsaContenidora(patricio,patrMin,patrMax);
+  /*Declaracio atributs dels parametres : MyGLWidget.h
+    Al cridar la funcio calCapsaContenidora : dono valor als atributs
+  */
+  calculaCapsaContenidora(patricio,patrMin,patrMax);
   ra = 1;
 
   glClearColor(0.5, 0.7, 1.0, 1.0); // defineix color de fons (d'esborrat)
@@ -50,10 +53,10 @@ void MyGLWidget::initializeGL ()
 
 void MyGLWidget::paintPatricio()
 {
-   float temp = rotate;
+   float aux = rotate;
    rotate = rotateP;
    modelTransform();
-   rotate = temp;
+   rotate = aux;
    
    // Activem el VAO per a pintar el Patricio
    glBindVertexArray (VAO_Patricio);
@@ -90,12 +93,15 @@ void MyGLWidget::paintGL ()
 }
 void MyGLWidget::modelTransform () 
 {
-	//1.rotate 2.scale 3.translate -CBP
-    // Matriu de transformació de model
-    glm::mat4 transform = glm::rotate(glm::mat4(1.0f),rotate,glm::vec3(0.,1.,0.));
-    transform = glm::scale(transform, glm::vec3(scale));
-    glm::vec3 centreCaixa ((patrMin.x+patrMax.x)/2,(patrMin.y+patrMax.y)/2,(patrMin.z+patrMax.z)/2);
-    transform = glm::translate(transform,-centreCaixa);
+	//Matriu TG se li aplica 1.rotate 2.scale 3.translate -CBP
+
+    //rota 90º sobre el eix Y (antihorari), es modifica per keyPressEvent
+    glm::mat4 transform = glm::rotate(glm::mat4(1.0f),rotate,glm::vec3(0.,1.,0.));  
+    //apliquem escalat, es modifica per keyPressEvent
+    transform = glm::scale(transform, glm::vec3(scale)); 
+    //apliquem translacio a CBP 
+    glm::vec3 CBP((patrMin.x + patrMax.x)/2,(patrMin.y + patrMax.y)/2,(patrMin.z + patrMax.z)/2); //formula
+    transform = glm::translate(transform,-CBP);
     glUniformMatrix4fv(transLoc, 1, GL_FALSE, &transform[0][0]);
 }
 
@@ -104,9 +110,10 @@ double calcFOV(double ra, double initialFOV)
 {
     if(ra >= 1) return initialFOV;
     else {
-        double alpha = initialFOV/2;
+    	//calcular angle obertura
+        double alpha = initialFOV/2; //perque FOV = 2*alfa
         double newAlpha = atan(tan(alpha)/ra);
-        return newAlpha*2;
+        return newAlpha*2;  //retorna FOV
     }
 }
 
@@ -118,23 +125,11 @@ void MyGLWidget::projectTransform ()
     glUniformMatrix4fv(projLoc,1,GL_FALSE,&project[0][0]);
 }
 
-double dist3Orig(glm::vec3 orig, glm::vec3 dest)
-{
-    double x=dest.x-orig.x;
-    double y=dest.y-orig.y;
-    double z=dest.z-orig.z;
-    double d = sqrt(x*x+y*y+z*z);
-    std::cout << "sqrt("<<x<<"²+"<<y<<"²+"<<z<<")="<<d<<std::endl;
-    return d;
-}
-
-
 void MyGLWidget::viewTransform ()
 {
-    //glm::vec3 centreCaixa ((patrMin.x+patrMax.x)/2,(patrMin.y+patrMax.y)/2,(patrMin.z+patrMax.z)/2);
-    //double znear = dist3Orig(centreCaixa,patrMax);
-    std::cout << "z min"<<patrMin.z<<"z max"<<patrMax.z<<std::endl;
-    glm::mat4 view = glm::lookAt(glm::vec3(0.,0.,((patrMax.z-patrMin.z)/2+1.5)),glm::vec3(0.,0.,0.),glm::vec3(0.,1.,0.));
+    //std::cout << "escriure" << endl;
+    //lookAt (OBS = 0.0.centre_z , VRP = 0.0.0, UP = 0.1.0 vertical)
+    glm::mat4 view = glm::lookAt(glm::vec3(0.,0.,((patrMax.z-patrMin.z)/2 + 1.5)),glm::vec3(0.,0.,0.),glm::vec3(0.,1.,0.));
     glUniformMatrix4fv(viewLoc,1,GL_FALSE,&view[0][0]);
 }
 void MyGLWidget::resizeGL (int w, int h) 
